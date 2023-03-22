@@ -1,7 +1,18 @@
 
 import './App.css';
+import {useEffect, useState} from 'react';
 
 function App() {
+
+  const [originalMovie,setOriginalMovie] =useState([]);
+  const [trendingMovie,setTrendingMovie] =useState([]);
+  const [topRatedMovie,setTopRatedMovie] =useState([]);
+
+  useEffect(()=>{
+    fetch(`https://api.themoviedb.org/3/discover/tv?api_key=19f84e11932abbc79e6d83f82d6d1045&with_networks=213`)
+    .then((res)=>res.json())
+    .then((data)=>setOriginalMovie(data.results))
+  },[])
   return (
     <div className="">
       <div class="featured">
@@ -21,6 +32,9 @@ function App() {
         </div>
         <div class="original__movies">
           {/* <!-- Orignal Movies List Here --> */}
+          {
+            originalMovie.map()
+          }
         </div>
       </div>
       <div class="movies">

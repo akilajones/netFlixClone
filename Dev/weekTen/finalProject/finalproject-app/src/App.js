@@ -1,8 +1,7 @@
 
 import './App.css';
 import {useEffect, useState} from 'react';
-
-function App() {
+ function App() {
 
   const [originalMovie,setOriginalMovie] =useState([]);
   const [trendingMovie,setTrendingMovie] =useState([]);
@@ -13,6 +12,62 @@ function App() {
     .then((res)=>res.json())
     .then((data)=>setOriginalMovie(data.results))
   },[])
+  useEffect(()=>{
+    fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=19f84e11932abbc79e6d83f82d6d1045`)
+    .then((res)=>res.json())
+    .then((data)=>setTrendingMovie(data.results))
+  },[])
+  useEffect(()=>{
+    fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=19f84e11932abbc79e6d83f82d6d1045&language=en-US&page=1`)
+    .then((res)=>res.json())
+    .then((data)=>setTopRatedMovie(data.results))
+  },[])
+
+   function getMovieTrailer(id) {
+    var url = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=19f84e11932abbc79e6d83f82d6d1045&language=en-US`
+    return  fetch(url).then(response => {
+      if (response.ok) {
+        return response.json()
+      } else {
+        throw new Error('something went wrong')
+      }
+    })
+  }
+
+  const setTrailer = trailers => {
+    const iframe = document.getElementById('movieTrailer')
+    const movieNotFound = document.querySelector('.movieNotFound')
+    if (trailers.length > 0) {
+      movieNotFound.classList.add('d-none')
+      iframe.classList.remove('d-none')
+      iframe.src = `https://www.youtube.com/embed/${trailers[0].key}`
+    } else {
+      iframe.classList.add('d-none')
+      movieNotFound.classList.remove('d-none')
+    }
+  }
+
+
+  const handleMovieSelection = e => {
+    const id = e.target.getAttribute('data-id');
+    const iframe = document.getElementById('movieTrailer')
+    // here we need the id of the movie
+    getMovieTrailer(id).then(data => {
+      const results = data.results
+      const youtubeTrailers = results.filter(result => {
+        if (result.site == 'YouTube' && result.type == 'Trailer') {
+          return true
+        } else {
+          return false
+        }
+      })
+      setTrailer(youtubeTrailers)
+    })
+  }
+  // const handleMovieSelection = e=>{
+  //   console.log(e);
+  // }
+  console.log(originalMovie);
   return (
     <div className="">
       <div class="featured">
@@ -33,7 +88,9 @@ function App() {
         <div class="original__movies">
           {/* <!-- Orignal Movies List Here --> */}
           {
-            originalMovie.map()
+            originalMovie.map((item,index)=>(
+              <img src={`https://image.tmdb.org/t/p/original${item.poster_path}`} key={index} onClick={handleMovieSelection} data-id={item?.id}></img>
+            ))
           }
         </div>
       </div>
@@ -47,12 +104,18 @@ function App() {
         </div>
         <div id="trending" class="movies__container">
           {/* <!-- Trending Movies List Here --> */}
+          {trendingMovie.map((item,index)=>(
+            <img src={`https://image.tmdb.org/t/p/original${item.backdrop_path}` } key={index} onClick={handleMovieSelection}data-id={item?.id}></img>
+          ))}
         </div>
         <div class="movies__header">
           <h2>Top Rated</h2>
         </div>
         <div id="top_rated" class="movies__container">
           {/* <!-- Top Rated Movies List Here --> */}
+          {topRatedMovie.map((item,index)=>(
+            <img src={`https://image.tmdb.org/t/p/original${item.backdrop_path}` } key={index} onClick={handleMovieSelection}data-id={item?.id}></img>
+          ))}
         </div>
       </div>
       <div
